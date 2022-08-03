@@ -38,7 +38,7 @@
 #         for set_id, is_set in enumerate(self.bins_enumeration):
 #             oos_set = set(range(self.n_bins)) - is_set
 #             is_returns = pd.concat([bins[i] for i in is_set])
-#             oos_returns = pd.concat([bins[i] for i in oos_set])
+#             oos_returns = eturns = pd.concat([bins[i] for i in oos_set])
 #             R = self.objective(is_returns)
 #             R_bar = self.objective(oos_returns)
 #             self.Rs[set_id] = self.Rs[set_id].append(R)
@@ -140,8 +140,6 @@
 #         return ret
 
 
-# !/usr/bin/env python3
-
 import itertools as itr
 import math
 import warnings
@@ -149,10 +147,13 @@ import warnings
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import ray
+# !/usr/bin/env python3
+from logger_tt import logger
 from statsmodels.distributions.empirical_distribution import ECDF
 
 sharpe_ratio = lambda r: r.mean() / (r.std() + 0.0000001) * (365 ** 0.5)
-
+# sharpe_ratio = lambda r: r.mean() / (r.std() + 0.0000001) * (252 ** 0.5)
 
 """The CSCV algorithm is a backtesting method used to estimate overfitting probability and performance degradation. 
 It works by dividing a dataset into in-sample (IS) and out-of-sample (OOS) sets, then calculating the ranking of each 
@@ -166,7 +167,8 @@ strategy in the IS set is calculated and compared to the average performance of 
 # Get high-quality data that reflects your cause-effect relationship idea, prepare it accordingly, formulate hypotheses and metrics
 # Train models, evaluate feature importance, ensure that there is a consistent signal using the right techniques
 # Build a trading strategy and evaluate “big picture” metrics from the distributional point of view
-# Estimate strategy risks and the probability of failure usin
+# Estimate strategy risks and the probability of failure using the CSCV algorithm and the risk-free rate of return.
+
 
 
 class CSCV(object):
@@ -177,7 +179,8 @@ class CSCV(object):
         objective:A function of in sample(is) and out of sample(oos) return benchmark algorithm.Default is lambda r:r.mean().
     """
 
-    def __init__(self, n_bins=10, objective=sharpe_ratio):
+    def __init__(self, study_dir, n_bins=10, objective=sharpe_ratio):
+        self.study_dir = study_dir
         self.n_bins = n_bins
         self.objective = objective
 
@@ -185,7 +188,6 @@ class CSCV(object):
 
         self.Rs = [pd.Series(dtype=float) for i in range(len(self.bins_enumeration))]
         self.R_bars = [pd.Series(dtype=float) for i in range(len(self.bins_enumeration))]
-
 
     def add_daily_returns(self, daily_returns):
         """Add daily_returns in algorithm.
@@ -198,6 +200,8 @@ class CSCV(object):
         bins = [daily_returns.iloc[i * bin_size: (i + 1) * bin_size] for i in range(self.n_bins)]
 
         warnings.simplefilter(action='ignore', category=FutureWarning)
+        logger.info("Splitting into IS and OS Returns")
+
         for set_id, is_set in enumerate(self.bins_enumeration):
             oos_set = set(range(self.n_bins)) - is_set
 
@@ -207,10 +211,66 @@ class CSCV(object):
             R = self.objective(is_returns)
             R_bar = self.objective(oos_returns)
 
+            # is_returns_ = is_returns.vbt.returns(freq='d')
+            # # oos_returns = oos_returns.vbt.returns(freq='d')
+            #
+            # logger.info(f'{is_returns = }')
+            # logger.info(f'{is_returns_= }')
+            # logger.info(f'{is_returns_.total()= }')
+            #
+            # exit()
             self.Rs[set_id] = self.Rs[set_id].append(R)
             self.R_bars[set_id] = self.R_bars[set_id].append(R_bar)
 
+    @staticmethod
+    @ray.remote
+    def add_daily_returns_for_remote(objective, bins, n_bins, set_id, is_set):
+        oos_set = set(range(n_bins)) - is_set
 
+        is_returns = pd.concat([bins[i] for i in is_set])
+        oos_returns = pd.concat([bins[i] for i in oos_set])
+
+        R = objective(is_returns)
+        R_bar = objective(oos_returns)
+
+        return [set_id, R, R_bar]
+
+    def remote_add_daily_returns(self, daily_returns):
+        """Add daily_returns in algorithm.
+                Args:
+                  daily_returns: A dataframe of trading daily_returns.
+                """
+
+        bin_size = daily_returns.shape[0] // self.n_bins
+
+        bins = [daily_returns.iloc[i * bin_size: (i + 1) * bin_size] for i in range(self.n_bins)]
+
+        warnings.simplefilter(action='ignore', category=FutureWarning)
+        from logger_tt import logger
+        logger.info(f'{len(self.bins_enumeration) = }')
+
+        result = ray.get(
+            [self.add_daily_returns_for_remote.remote(self.objective, bins, self.n_bins, set_id, is_set) for
+             set_id, is_set in
+             enumerate(self.bins_enumeration)])
+
+        # self.Rs[set_id] = self.Rs[set_id].append(R)
+        # self.R_bars[set_id] = self.R_bars[set_id].append(R_bar)
+        result = np.array(result)
+        result = result.transpose()
+        set_id, R, R_bar = result
+
+        # print(R.shape)
+        # print(R.size)
+        # # exit()
+        # return R
+        # logger.info(f'{set_id = }')
+        # logger.info(f'{R = }')
+        # logger.info(f'{R_bar = }')
+        # exit()
+        #
+
+        #
         #     type(oos_set) = <class 'set'>
         # type(is_returns) = <class 'pandas.core.frame.DataFrame'>
         # type(oos_returns) = <class 'pandas.core.frame.DataFrame'>
@@ -218,9 +278,6 @@ class CSCV(object):
         # type(R_bar) = <class 'pandas.core.series.Series'>
         # type(self.Rs) = <class 'list'>
         # type(self.R_bars) = <class 'list'>
-
-        exit()
-
 
     def estimate_overfitting(self, plot=False):
         """Estimate overfitting probability.
@@ -245,13 +302,16 @@ class CSCV(object):
         R_rank_df = R_df.rank(axis=1, ascending=False, method='first')
         R_bar_rank_df = R_bar_df.rank(axis=1, ascending=False, method='first')
 
-        # find the IS performance of th trategies that has the best ranking in IS
+        # find the IS performance of the strategies that has the best ranking in IS
         r_star_series = (R_df * (R_rank_df == 1)).unstack().dropna()
         r_star_series = r_star_series[r_star_series != 0].sort_index(level=-1)
 
         # find the OOS performance of the strategies that has the best ranking in IS
         r_bar_star_series = (R_bar_df * (R_rank_df == 1)).unstack().dropna()
         r_bar_star_series = r_bar_star_series[r_bar_star_series != 0].sort_index(level=-1)
+
+        logger.info(f'{len(r_star_series) = }')
+        logger.info(f'{len(r_bar_star_series) = }')
 
         # find the ranking of strategies which has the best ranking in IS
         r_bar_rank_series = (R_bar_rank_df * (R_rank_df == 1)).unstack().dropna()
@@ -294,6 +354,7 @@ class CSCV(object):
             'R_bar_n_star': r_bar_star_series.to_list(),
             'dom_df': dom_df,
         }
+        print(f'PBO: {round(ret["pbo_test"] * 100)} %')
 
         if plot:
             # probability distribution
@@ -301,19 +362,24 @@ class CSCV(object):
             plt.hist(x=[l for l in ret['logits'] if l > -10000], bins='auto')
             plt.xlabel('Logits')
             plt.ylabel('Frequency')
+            plt.savefig(f'{self.study_dir}/probability_distribution.png')
             plt.show()
-
+            #
             # performance degradation
             plt.title('Performance degradation')
+            assert len(ret['R_n_star']) == len(ret['R_bar_n_star'])
             plt.scatter(ret['R_n_star'], ret['R_bar_n_star'])
             plt.xlabel('In-sample Performance')
             plt.ylabel('Out-of-sample Performance')
-
+            plt.savefig(f'{self.study_dir}/performance_degradation.png')
+            # plt.show()
+            #
             # first and second Stochastic dominance
             plt.title('Stochastic dominance')
             ret['dom_df'].plot(secondary_y=['SD2'])
             plt.xlabel('Performance optimized vs non-optimized')
             plt.ylabel('Frequency')
+            plt.savefig(f'{self.study_dir}/stochastic_dominance.png')
             plt.show()
 
         return ret
@@ -325,7 +391,8 @@ def test_cscv():
     returns = pd.DataFrame({'s' + str(i): np.random.normal(0, 0.02, size=nreturns) for i in range(nstrategy)})
     returns['s1'] += 0.02
 
-    cscv = CSCV()
+    study_dir = '.'
+    cscv = CSCV(study_dir)
     cscv.add_daily_returns(returns)
     results = cscv.estimate_overfitting(plot=True)
 
@@ -333,7 +400,7 @@ def test_cscv():
 
     returns = pd.DataFrame({'s' + str(i): np.random.normal(0, 0.02, size=nreturns) for i in range(nstrategy)})
 
-    cscv = CSCV()
+    cscv = CSCV(study_dir)
     cscv.add_daily_returns(returns)
     results = cscv.estimate_overfitting(plot=True)
 

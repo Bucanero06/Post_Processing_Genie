@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+
 import ray
 
 from Run_Time_Handler.vbtmetricsdictionary import vbtmetricsdictionary
@@ -237,22 +238,53 @@ class Post_Processing_Genie:
         self.settings = runtime_parameters.settings
         self.metric_call_names = runtime_parameters.metric_call_names
 
+    @staticmethod
+    def flatten_dict(df):
+        import flatdict
+        return flatdict.FlatDict(df, delimiter='.')
+
+    def _get_return_dict_initial_mask_mask(self, flat_key_name):
+        ###
+        # df = self.return_dict["Filters"]["Default"]
+        df = self.return_dict
+        df = self.flatten_dict(df)
+        df = df[flat_key_name]
+        columns = df.columns
+        column = "symbol"
+        column_index = columns.get_loc(column)
+        #
+        result = df[df.columns[:column_index + 1]]
+        #
+        # print(f'{[tuple(i) for i in result.values] = }')
+        # exit()
+        if not result.empty:
+            return [tuple(i) for i in result.values]
+        else:
+            return None
+
+        ###
+
     def call_overfitting(self, actions_dict=None):
         """Overfitting Module"""
         if actions_dict is None or actions_dict == 'Default':
             from Overfitting_Genie.overfitting_main import Overfitting_Genie
-            overfitting_obj = Overfitting_Genie(self.pickle_files_paths, cscv_nbins=10,
+            overfitting_obj = Overfitting_Genie(self.study_dir, self.pickle_files_paths, cscv_nbins=10,
+                                                # cscv_objective=lambda r: r.mean() / (r.std() + 0.0000001) * (
+                                                #         365 ** 0.5),
                                                 cscv_objective=lambda r: r.mean() / (r.std() + 0.0000001) * (
-                                                        365 ** 0.5),
+                                                        252 ** 0.5),
                                                 plot_bool=False)
+
             self.return_dict["Overfitting"] = {
-                'Default': overfitting_obj.cscv()}
+                'Default': overfitting_obj.cscv(initial_mask=None)}
+            # 'Default': overfitting_obj.cscv(initial_mask=self._get_return_dict_initial_mask_mask("Filters.Default"))}
         else:
             # Parse actions_dict
             # prepare sequence
             # call actions
             ...
         #
+
         return self.return_dict["Overfitting"]
 
     #
@@ -368,6 +400,8 @@ def run(args):  # for overfitting, not for mini_genie
             post_processing_obj.call_overfitting()
         if args.filters_bool:
             post_processing_obj.call_filters()
+            post_processing_obj.call_overfitting()
+
         #
         if args.analysis_bool:
             post_processing_obj.call_analyser()
@@ -385,5 +419,6 @@ if __name__ == "__main__":
     setup_logging(full_context=1)
     #
     run_time_handler = run_time_handler(run_function=run)
+
     ray.init(num_cpus=28)
     run_time_handler.call_run_function()

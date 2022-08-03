@@ -4,31 +4,31 @@ from os import path
 
 from logger_tt import logger
 
-# STUDY_DIRECTORY_DEFAULT = "/home/ruben/PycharmProjects/mini_Genie/Studies/Study_mmt_debug"
+STUDY_DIRECTORY_DEFAULT = "/home/ruben/PycharmProjects/mini_Genie/Studies/Study_mmt_debug"
 # STUDY_DIRECTORY_DEFAULT = "/home/ruben/PycharmProjects/mini_Genie/Studies/Study_mmt_USA30_debug"
 # STUDY_DIRECTORY_DEFAULT = "/home/ruben/PycharmProjects/mini_Genie/Studies/Study_mmt_USA30_update_66M"
 # STUDY_DIRECTORY_DEFAULT = "/home/ruben/PycharmProjects/mini_Genie/Studies/Study_mmt_USA30_update_test_66M"
 # STUDY_DIRECTORY_DEFAULT = "/home/ruben/PycharmProjects/mini_Genie/Studies/Study_mmt_USA100_66M"
 # STUDY_DIRECTORY_DEFAULT = "/home/ruben/PycharmProjects/mini_Genie/Studies/Study_mmt_USA30_66M"
 # STUDY_DIRECTORY_DEFAULT = "/home/ruben/PycharmProjects/mini_Genie/Studies/Study_mmt_USD30_1.2B_part_2"
-STUDY_DIRECTORY_DEFAULT = "/home/ruben/PycharmProjects/mini_Genie/Studies/Study_mmt_USD100_1.2B"
-
+# STUDY_DIRECTORY_DEFAULT = "/home/ruben/PycharmProjects/mini_Genie/Studies/Study_mmt_USD100_1.2B"
+# STUDY_DIRECTORY_DEFAULT = "/home/ruben/PycharmProjects/mini_Genie/Studies/Study_mmt_TSLA_Expo_Optimization_03042022_07262022"
 
 # STUDY_DIRECTORY_DEFAULT = False
-OVERFITTING_BOOL_DEFAULT = True
-FILTERS_BOOL_DEFAULT = False
+OVERFITTING_BOOL_DEFAULT = False
+FILTERS_BOOL_DEFAULT = True
 ANALYSIS_BOOL_DEFAULT = False
 ACTIONS_PATH_DEFAULT = False
 # todo need to move to inputs not defined here in run function, or pass to args the location of settings/requirements dictionary
 SETTINGS = dict(
-    Leverage=1,  # todo right now used to filter out less and more
+    Leverage=100,  # todo right now used to filter out less and more
     Init_cash=1_000_000,  # todo automatic
     Trade_size=100_000,  # todo automatic
     min_strats_per_batch=1,
     N_STEP_INCREASE=1
 )
 REQUIREMENTS = dict(
-    Min_total_trades=200,
+    Min_total_trades=1,
     Profit_factor=1.0,
     #
     Expectancy=0.01,

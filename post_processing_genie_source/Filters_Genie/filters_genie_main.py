@@ -20,6 +20,10 @@ class Filters_Genie:
         self.metric_call_names = metric_call_names
         ...
 
+        if not self.pickle_files_paths:
+            logger.error(f'Paths to pickles found no porfolios for study {self.study_dir}, assure the correct study path was used')
+
+
     def rescale_requirements(self, req, sett):
         for keynames in req:
             if keynames not in ["Min_total_trades", "Profit_factor", "Total_Win_Rate",
@@ -85,7 +89,6 @@ class Filters_Genie:
                 pf_daily = pf_minutes.resample('1d')
                 pf_weekly = pf_minutes.resample('1w')
                 pf_monthly = pf_minutes.resample('1M')
-
                 #
                 logger.info(f'Starting with {pf_monthly.wrapper.shape[1]} strategies')
                 #   #   #   #   #   #   #   #   #   #
@@ -99,6 +102,7 @@ class Filters_Genie:
 
                 successful_strats, continue_ = self.check_if_continue(pf_monthly, successful_strats,
                                                                       min_strats_per_batch)
+
                 if continue_ is None:
                     continue
 
@@ -270,8 +274,8 @@ class Filters_Genie:
 
                 successful_strats.append(pf_daily.wrapper.shape[1])
 
-                pf_max_drawdown = pf_daily[mask].get_max_drawdown()
-                logger.info(pf_max_drawdown)
+                # pf_max_drawdown = pf_daily[mask].get_max_drawdown()
+                # logger.info(pf_max_drawdown)
 
                 gc.collect()
 
@@ -293,7 +297,7 @@ class Filters_Genie:
             filtered_pf_stats_loaded = filtered_pf_stats_loaded.sort_values("Expectancy", ascending=False)
             save_record_to_file(filtered_pf_stats_loaded, metrics_output_path, write_mode="w")
 
-        # > Sort Base on eq < #
-        #   Equity Curve
+            # > Sort Base on eq < #
+            #   Equity Curve
 
-        return filtered_pf_stats_loaded
+            return filtered_pf_stats_loaded
