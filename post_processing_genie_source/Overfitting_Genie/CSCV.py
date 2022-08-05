@@ -161,13 +161,36 @@ strategy in the IS set. The performance of the strategies that have the best ran
 the average performance of all strategies in the OOS set. The overfitting probability is then estimated based on the 
 difference in rankings between the IS and OOS sets. The performance degradation is estimated by calculating the 
 difference in performance between the IS and OOS sets. Finally, the stochastic dominance of the best-performing 
-strategy in the IS set is calculated and compared to the average performance of all strategies in the OOS set."""
+strategy in the IS set is calculated and compared to the average performance of all strategies in the OOS set.
+
+# Here's what the below class is doing:
+# 1. It splits the data into 10 bins.
+# 2. It then takes 9 of those bins and uses them as in-sample (IS) data, and the remaining bin is used as out-of-sample (OOS) data.
+# 3. This process is repeated for all possible combinations of IS/OOS bins.
+# 4. For each IS/OOS combination, the strategy is trained on the IS data and then tested on the OOS data.
+# 5. The results are stored in a list of lists (self.Rs). Each sub-list contains the performance of the strategy for one IS/OOS combination.
+# 6. The results are then used to calculate the probability of overfitting (PBO).
+# 6.1 This is done by ranking the performance of each strategy for each IS/OOS combination.
+# 6.2 The best performing strategy in IS is then identified, and its OOS performance is recorded.
+# 6.3 This process is repeated for all IS/OOS combinations.
+# 6.4 A logit function is used to estimate the probability of overfitting.
+# 6.5 The PBO is then calculated as the number of logits that are less than zero, divided by the total number of logits.
+# 7. The results are also used to calculate the performance degradation.
+# 7.1 This is done by plotting the IS and OOS performance of the best performing strategy in IS for each IS/OOS combination.
+# 8. The results are also used to calculate stochastic dominance (SD).
+# 8.1 This is done by plotting the cumulative distribution function (CDF) of the IS and OOS performance of the best performing strategy in IS for each IS/OOS combination.
+# 8.2 The first SD is calculated as the area under the curve where the CDF of the IS performance is greater than that of the OOS performance.
+# 8.3 The second SD is calculated as the area under the curve where the CDF of the IS performance is less than that of the OOS performance.
 
 
-# Get high-quality data that reflects your cause-effect relationship idea, prepare it accordingly, formulate hypotheses and metrics
-# Train models, evaluate feature importance, ensure that there is a consistent signal using the right techniques
-# Build a trading strategy and evaluate “big picture” metrics from the distributional point of view
-# Estimate strategy risks and the probability of failure using the CSCV algorithm and the risk-free rate of return.
+"""
+
+
+# Todo
+#   Get high-quality data that reflects your cause-effect relationship idea, prepare it accordingly, formulate hypotheses and metrics
+#   Train models, evaluate feature importance, ensure that there is a consistent signal using the right techniques
+#   Build a trading strategy and evaluate “big picture” metrics from the distributional point of view
+#   Estimate strategy risks and the probability of failure using the CSCV algorithm and the risk-free rate of return.
 
 
 
