@@ -384,7 +384,6 @@ def run(args):  # for overfitting, not for mini_genie
         'Avg Winning Trade [%]',
         'Avg Losing Trade [%]',
         'Expectancy',
-
     ]
     # 'Total Return [%]', 'Total Trades',  'Profit Factor', 'Max Drawdown [%]', 'Win Rate [%]','Sharpe Ratio', 'Omega Ratio','Sortino Ratio','Max Gross Exposure [%]','Avg Winning Trade [%]','Avg Losing Trade [%]','Expectancy',
     args.metric_call_names = [vbtmetricsdictionary[string] for string in VBT_METRICS]
@@ -392,23 +391,16 @@ def run(args):  # for overfitting, not for mini_genie
     "''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"
     post_processing_obj = Post_Processing_Genie(args)
 
-    # todo actions must be passed in a python dictionary object to the module. Most likely through
-    #   {dictionary_file_path}.{dict_name} then parsed; for API example see details above.
-    if args.actions is None:
-        #
-        if args.overfitting_bool:
-            post_processing_obj.call_overfitting()
-        if args.filters_bool:
-            post_processing_obj.call_filters()
-            post_processing_obj.call_overfitting()
+    print(f'{args.actions = }')
 
-        #
-        if args.analysis_bool:
-            post_processing_obj.call_analyser()
-    else:
-        # parse actions
-        # etc ...
-        ...
+    if args.overfitting_bool:
+        post_processing_obj.call_overfitting()
+    if args.filters_bool:
+        post_processing_obj.call_filters()
+    #
+    if args.analysis_bool:
+        post_processing_obj.call_analyser()
+
 
 
 if __name__ == "__main__":

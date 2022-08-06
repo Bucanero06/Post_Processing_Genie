@@ -5,9 +5,8 @@ from os import path, remove
 
 import numpy as np
 import pandas as pd
-from logger_tt import logger
-
 from Utilities.utils import load_pf_file, next_path, save_record_to_file
+from logger_tt import logger
 
 
 class Filters_Genie:
@@ -21,8 +20,8 @@ class Filters_Genie:
         ...
 
         if not self.pickle_files_paths:
-            logger.error(f'Paths to pickles found no porfolios for study {self.study_dir}, assure the correct study path was used')
-
+            logger.error(
+                f'Paths to pickles found no porfolios for study {self.study_dir}, assure the correct study path was used')
 
     def rescale_requirements(self, req, sett):
         for keynames in req:
@@ -78,9 +77,9 @@ class Filters_Genie:
             start = perf_counter()
             pfs_len = len(self.pickle_files_paths)
             successful_strats = []
-            pbo_list = []
             for pf_index, pickle_path in enumerate(self.pickle_files_paths):
-                logger.info(f"\nPF #{pf_index + 1} of  {pfs_len}")
+                logger.info(f"\n")
+                logger.info(f"PF #{pf_index + 1} of  {pfs_len}")
 
                 # > Load current pc < #
                 pf_minutes = load_pf_file(pickle_path)
@@ -200,26 +199,26 @@ class Filters_Genie:
                     self.settings["Leverage"] = self.settings["Leverage"] + N_STEP_INCREASE
                     break
 
-                #   Expected
-                pf_total_profit = pf_total_profit[mask]
-                pf_total_trades = pf_total_trades[mask]
-                pf_expectancy = pf_total_profit[mask] / pf_total_trades[mask]
-                pf_expected_adj_return = pf_expectancy / self.settings["Init_cash"]
-
-                mask = [col for col in pf_expected_adj_return.keys()
-                        if (pf_expected_adj_return[col] >= self.requirements["Expectancy"])]
+                # #   Expected
+                # pf_total_profit = pf_total_profit[mask]
+                # pf_total_trades = pf_total_trades[mask]
+                # pf_expectancy = pf_total_profit[mask] / pf_total_trades[mask]
+                # pf_expected_adj_return = pf_expectancy / self.settings["Init_cash"]
                 #
-                pf_daily, pf_weekly, pf_monthly = self.filter_unmasked(mask, pf_index, pf_daily, pf_weekly, pf_monthly,
-                                                                       metric="Expectancy")
-
-                successful_strats, continue_ = self.check_if_continue(pf_monthly, successful_strats,
-                                                                      min_strats_per_batch)
-                if continue_ is None:
-                    continue
-                elif continue_ is False:
-                    logger.warning("Adjusting Leverage")
-                    self.settings["Leverage"] = self.settings["Leverage"] + N_STEP_INCREASE
-                    break
+                # mask = [col for col in pf_expected_adj_return.keys()
+                #         if (pf_expected_adj_return[col] >= self.requirements["Expectancy"])]
+                # #
+                # pf_daily, pf_weekly, pf_monthly = self.filter_unmasked(mask, pf_index, pf_daily, pf_weekly, pf_monthly,
+                #                                                        metric="Expectancy")
+                #
+                # successful_strats, continue_ = self.check_if_continue(pf_monthly, successful_strats,
+                #                                                       min_strats_per_batch)
+                # if continue_ is None:
+                #     continue
+                # elif continue_ is False:
+                #     logger.warning("Adjusting Leverage")
+                #     self.settings["Leverage"] = self.settings["Leverage"] + N_STEP_INCREASE
+                #     break
 
                 #   Profit Factor
                 pf_monthly_profit_factor = pf_monthly_trades[mask].get_profit_factor(chunked=chunked_type)
@@ -292,7 +291,7 @@ class Filters_Genie:
             # filtered_pf_stats_loaded["Expectancy"] = (filtered_pf_stats_loaded["Expectancy"] / self.settings[
             #     "Init_cash"]) * 100
             #
-            filtered_pf_stats_loaded["Total Profit"] = filtered_pf_stats_loaded["Total Return [%]"] * self.settings["Init_cash"] / 100
+            # filtered_pf_stats_loaded["Total Profit"] = filtered_pf_stats_loaded["Total Return [%]"] * self.settings["Init_cash"] / 100
             #
             filtered_pf_stats_loaded = filtered_pf_stats_loaded.sort_values("Expectancy", ascending=False)
             save_record_to_file(filtered_pf_stats_loaded, metrics_output_path, write_mode="w")

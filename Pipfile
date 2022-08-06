@@ -4,6 +4,15 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+numpy = "~=1.22.4"
+pandas = "~=1.4.2"
+scipy = "~=1.8.1"
+ray = "~=1.13.0"
+psutil = "~=5.9.1"
+matplotlib = "~=3.5.2"
+statsmodels = "~=0.13.2"
+logger-tt = "~=1.7.0"
+vectorbtpro = {extras = ["base"], editable = true, git = "https://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@github.com/polakowo/vectorbt.pro.git"}
 
 [dev-packages]
 

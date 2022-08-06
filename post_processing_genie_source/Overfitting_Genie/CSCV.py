@@ -164,10 +164,10 @@ difference in performance between the IS and OOS sets. Finally, the stochastic d
 strategy in the IS set is calculated and compared to the average performance of all strategies in the OOS set.
 
 # Here's what the below class is doing:
-# 1. It splits the data into 10 bins.
+# 1. It splits the data into N (10) bins.
 # 2. It then takes 9 of those bins and uses them as in-sample (IS) data, and the remaining bin is used as out-of-sample (OOS) data.
 # 3. This process is repeated for all possible combinations of IS/OOS bins.
-# 4. For each IS/OOS combination, the strategy is trained on the IS data and then tested on the OOS data.
+# 4. For each IS/OOS combination, the strategy is 'trained' on the IS data and then tested on the OOS data.
 # 5. The results are stored in a list of lists (self.Rs). Each sub-list contains the performance of the strategy for one IS/OOS combination.
 # 6. The results are then used to calculate the probability of overfitting (PBO).
 # 6.1 This is done by ranking the performance of each strategy for each IS/OOS combination.

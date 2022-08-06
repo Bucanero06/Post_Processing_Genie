@@ -14,16 +14,15 @@ STUDY_DIRECTORY_DEFAULT = "/home/ruben/PycharmProjects/mini_Genie/Studies/Study_
 # STUDY_DIRECTORY_DEFAULT = "/home/ruben/PycharmProjects/mini_Genie/Studies/Study_mmt_USD100_1.2B"
 # STUDY_DIRECTORY_DEFAULT = "/home/ruben/PycharmProjects/mini_Genie/Studies/Study_mmt_TSLA_Expo_Optimization_03042022_07262022"
 
-# STUDY_DIRECTORY_DEFAULT = False
+# STUDY_DIRECTORY_DEFAULT = None
 OVERFITTING_BOOL_DEFAULT = False
 FILTERS_BOOL_DEFAULT = True
 ANALYSIS_BOOL_DEFAULT = False
 ACTIONS_PATH_DEFAULT = False
-# todo need to move to inputs not defined here in run function, or pass to args the location of settings/requirements dictionary
+ACTIONS_JSON = None
+
 SETTINGS = dict(
     Leverage=100,  # todo right now used to filter out less and more
-    Init_cash=1_000_000,  # todo automatic
-    Trade_size=100_000,  # todo automatic
     min_strats_per_batch=1,
     N_STEP_INCREASE=1
 )
@@ -37,11 +36,7 @@ REQUIREMENTS = dict(
     Profit_for_month=0.1,
     Total_Win_Rate=0.03
 )
-ACTIONS = dict(
-    Filters=dict(
-        actions=None
-    )
-)
+
 
 
 class run_time_handler:
@@ -70,15 +65,15 @@ class run_time_handler:
         general_group.add_argument("-s", help="Path to Study Folder", dest="study_dir",
                                    action='store',
                                    default=STUDY_DIRECTORY_DEFAULT)
+        general_group.add_argument("--actions", help="Path to Study Folder", dest="actions",
+                                   action='store',
+                                   default=ACTIONS_JSON)
         general_group.add_argument("-o", help="Runs overfitting module", dest="overfitting_bool",
                                    action='store_true',
                                    default=OVERFITTING_BOOL_DEFAULT)
         general_group.add_argument("-f", help="Runs filters module", dest="filters_bool",
                                    action='store_true',
                                    default=FILTERS_BOOL_DEFAULT)
-        general_group.add_argument("-actions_path", help="Path to commands used to run using action API",
-                                   dest="actions_path", action='store',
-                                   default=ACTIONS_PATH_DEFAULT)
         general_group.add_argument("-a", help="Runs analysis module", dest="analysis_bool",
                                    action='store_true',
                                    default=ANALYSIS_BOOL_DEFAULT)
@@ -86,7 +81,17 @@ class run_time_handler:
         self.parser = parser
         self.parser.set_defaults(func=run_function)
         self.args = self.parser.parse_args()
+        self.args.requirements = {}
         #
+        if self.args.actions:
+            self.args.actions = eval(self.args.actions)
+            self.args.study_dir = self.args.actions["study_path"]
+
+            if self.args.filters_bool:
+                for key in REQUIREMENTS.keys():
+                    self.args.requirements[key] = self.args.actions[key]
+
+
         if not self.args.study_dir:
             logger.error(f'No study dir passed')
             exit()
@@ -98,16 +103,12 @@ class run_time_handler:
             parser.print_help()
             exit()
         else:
-            # todo Load Settings and Requirements (Runtime parameters)
             self.args.settings = SETTINGS
-            self.args.requirements = REQUIREMENTS
+            self.args.requirements = self.args.requirements or REQUIREMENTS
+            #
             from Utilities.utils import fetch_pf_files_paths
             self.args.pickle_files_paths = fetch_pf_files_paths(self.args.study_dir)
-            if self.args.actions_path and path.exists(self.args.actions_path):
-                # todo Load Actions/Commands (Runtime parameters)
-                self.args.actions = ACTIONS
-            else:
-                self.args.actions = None
+
 
     @staticmethod
     def load_module_from_path(filename, object_name=None):
