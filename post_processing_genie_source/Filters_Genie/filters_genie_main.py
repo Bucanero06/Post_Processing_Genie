@@ -22,6 +22,7 @@ class Filters_Genie:
         if not self.pickle_files_paths:
             logger.error(
                 f'Paths to pickles found no porfolios for study {self.study_dir}, assure the correct study path was used')
+            exit()
 
     def rescale_requirements(self, req, sett):
         for keynames in req:

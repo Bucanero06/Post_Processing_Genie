@@ -412,5 +412,5 @@ if __name__ == "__main__":
     #
     run_time_handler = run_time_handler(run_function=run)
 
-    ray.init(num_cpus=28)
+    ray.init()
     run_time_handler.call_run_function()
