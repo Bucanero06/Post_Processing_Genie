@@ -4,7 +4,7 @@ from os import path
 
 from logger_tt import logger
 
-STUDY_DIRECTORY_DEFAULT = "/home/ruben/PycharmProjects/mini_Genie/Studies/Study_mmt_debug"
+# STUDY_DIRECTORY_DEFAULT = "/home/ruben/PycharmProjects/mini_Genie/Studies/Study_mmt_debug"
 # STUDY_DIRECTORY_DEFAULT = "/home/ruben/PycharmProjects/mini_Genie/Studies/Study_mmt_USA30_debug"
 # STUDY_DIRECTORY_DEFAULT = "/home/ruben/PycharmProjects/mini_Genie/Studies/Study_mmt_USA30_update_66M"
 # STUDY_DIRECTORY_DEFAULT = "/home/ruben/PycharmProjects/mini_Genie/Studies/Study_mmt_USA30_update_test_66M"
@@ -14,9 +14,9 @@ STUDY_DIRECTORY_DEFAULT = "/home/ruben/PycharmProjects/mini_Genie/Studies/Study_
 # STUDY_DIRECTORY_DEFAULT = "/home/ruben/PycharmProjects/mini_Genie/Studies/Study_mmt_USD100_1.2B"
 # STUDY_DIRECTORY_DEFAULT = "/home/ruben/PycharmProjects/mini_Genie/Studies/Study_mmt_TSLA_Expo_Optimization_03042022_07262022"
 
-# STUDY_DIRECTORY_DEFAULT = None
+STUDY_DIRECTORY_DEFAULT = None
 OVERFITTING_BOOL_DEFAULT = False
-FILTERS_BOOL_DEFAULT = True
+FILTERS_BOOL_DEFAULT = False
 ANALYSIS_BOOL_DEFAULT = False
 ACTIONS_PATH_DEFAULT = False
 ACTIONS_JSON = None
@@ -36,7 +36,6 @@ REQUIREMENTS = dict(
     Profit_for_month=0.1,
     Total_Win_Rate=0.03
 )
-
 
 
 class run_time_handler:
@@ -91,7 +90,6 @@ class run_time_handler:
                 for key in REQUIREMENTS.keys():
                     self.args.requirements[key] = self.args.actions[key]
 
-
         if not self.args.study_dir:
             logger.error(f'No study dir passed')
             exit()
@@ -108,7 +106,6 @@ class run_time_handler:
             #
             from Utilities.utils import fetch_pf_files_paths
             self.args.pickle_files_paths = fetch_pf_files_paths(self.args.study_dir)
-
 
     @staticmethod
     def load_module_from_path(filename, object_name=None):
