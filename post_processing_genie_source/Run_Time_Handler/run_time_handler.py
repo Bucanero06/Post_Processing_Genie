@@ -18,7 +18,7 @@ STUDY_DIRECTORY_DEFAULT = None
 OVERFITTING_BOOL_DEFAULT = False
 FILTERS_BOOL_DEFAULT = False
 ANALYSIS_BOOL_DEFAULT = False
-ACTIONS_PATH_DEFAULT = False
+# ACTIONS_PATH_DEFAULT = False
 ACTIONS_JSON = None
 
 SETTINGS = dict(
@@ -54,7 +54,13 @@ class run_time_handler:
 
     """
 
-    def __init__(self, run_function):
+    def __init__(self, run_function,
+                 STUDY_DIRECTORY_DEFAULT=STUDY_DIRECTORY_DEFAULT,
+                 ACTIONS_JSON=ACTIONS_JSON,
+                 OVERFITTING_BOOL_DEFAULT=OVERFITTING_BOOL_DEFAULT,
+                 FILTERS_BOOL_DEFAULT=FILTERS_BOOL_DEFAULT,
+                 ANALYSIS_BOOL_DEFAULT=ANALYSIS_BOOL_DEFAULT,
+                 ):
         """Constructor for run_time_handler"""
         #
         parser = argparse.ArgumentParser(description="Help for mini-Genie Trader")
@@ -83,7 +89,7 @@ class run_time_handler:
         self.args.requirements = {}
         #
         if self.args.actions:
-            self.args.actions = eval(self.args.actions)
+            # self.args.actions = eval(self.args.actions)
             self.args.study_dir = self.args.actions["study_path"]
 
             if self.args.filters_bool:
@@ -104,7 +110,7 @@ class run_time_handler:
             self.args.settings = SETTINGS
             self.args.requirements = self.args.requirements or REQUIREMENTS
             #
-            from Utilities.utils import fetch_pf_files_paths
+            from Modules.Utils import fetch_pf_files_paths
             self.args.pickle_files_paths = fetch_pf_files_paths(self.args.study_dir)
 
     @staticmethod

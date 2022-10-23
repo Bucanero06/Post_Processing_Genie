@@ -3,8 +3,8 @@
 
 import ray
 
-from Run_Time_Handler.vbtmetricsdictionary import vbtmetricsdictionary
-
+from post_processing_genie_source.Run_Time_Handler.vbtmetricsdictionary import vbtmetricsdictionary
+from logger_tt import logger # noqa: F401
 
 #
 # def compute_metrics(returns):
@@ -290,7 +290,7 @@ class Post_Processing_Genie:
     #
     def call_filters(self,
                      actions_dict=None):  # todo actions_dict is meant to accept a dict with details of sequence of calls to filters, needs a parser
-        from Filters_Genie.filters_genie_main import Filters_Genie
+        from post_processing_genie_source.Filters_Genie.filters_genie_main import Filters_Genie
         filter_obj = Filters_Genie(self.study_dir, self.pickle_files_paths, self.requirements, self.settings,
                                    self.metric_call_names)
 
@@ -308,7 +308,7 @@ class Post_Processing_Genie:
         ...
 
 
-def run(args):  # for overfitting, not for mini_genie
+def call_post_processing_genie(args):  # for overfitting, not for mini_genie
     """"""
     logger.info(f'Post Analysing {args.study_dir}')
 
@@ -410,7 +410,7 @@ if __name__ == "__main__":
     #
     setup_logging(full_context=1)
     #
-    run_time_handler = run_time_handler(run_function=run)
+    run_time_handler = run_time_handler(run_function=call_post_processing_genie)
 
     ray.init()
     run_time_handler.call_run_function()

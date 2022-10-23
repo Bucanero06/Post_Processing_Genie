@@ -27,12 +27,6 @@ def next_path(path_pattern):
 
     return path_pattern % b
 
-def fetch_pf_files_paths(study_dir):
-    import glob
-
-    targetPattern = r"%s/Portfolio/pf_*.pickle" % study_dir
-    return glob.glob(targetPattern)
-
 def load_pf_file(pickle_file_path):
     from vectorbtpro import Portfolio
     return Portfolio.load(pickle_file_path)

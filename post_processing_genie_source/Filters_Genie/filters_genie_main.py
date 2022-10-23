@@ -5,8 +5,11 @@ from os import path, remove
 
 import numpy as np
 import pandas as pd
-from Utilities.utils import load_pf_file, next_path, save_record_to_file
+# from Utilities.utils import load_pf_file, next_path, save_record_to_file
 from logger_tt import logger
+
+from Modules.Utils import next_path, save_record_to_file
+from vectorbtpro import Portfolio
 
 
 class Filters_Genie:
@@ -79,11 +82,15 @@ class Filters_Genie:
             pfs_len = len(self.pickle_files_paths)
             successful_strats = []
             for pf_index, pickle_path in enumerate(self.pickle_files_paths):
+                gc.collect()
                 logger.info(f"\n")
                 logger.info(f"PF #{pf_index + 1} of  {pfs_len}")
 
                 # > Load current pc < #
-                pf_minutes = load_pf_file(pickle_path)
+                # pf_minutes = load_pf_file(pickle_path)
+                pf_minutes = Portfolio.load(pickle_path)
+                a = [col for col in pf_minutes.wrapper.columns if 'XAUUSD' in col]
+                pf_minutes = pf_minutes[a]
 
                 # > Resample < #
                 pf_daily = pf_minutes.resample('1d')
@@ -96,6 +103,7 @@ class Filters_Genie:
                 # > Remove those combinations with zero/negative returns< #
                 pf_total_returns = pf_monthly.get_total_return(chunked=chunked_type)
                 mask = pf_total_returns[pf_total_returns > 0].index
+
                 #
                 pf_daily, pf_weekly, pf_monthly = self.filter_unmasked(mask, pf_index, pf_daily, pf_weekly, pf_monthly,
                                                                        metric="Profitable")
