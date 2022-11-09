@@ -113,6 +113,10 @@ class run_time_handler:
             from Modules.Utils import fetch_pf_files_paths
             self.args.pickle_files_paths = fetch_pf_files_paths(self.args.study_dir)
 
+            # Order the files by size from highest to lowest
+            self.args.pickle_files_paths.sort(key=lambda x: path.getsize(x), reverse=False)
+            #
+
     @staticmethod
     def load_module_from_path(filename, object_name=None):
 

@@ -89,8 +89,8 @@ class Filters_Genie:
                 # > Load current pc < #
                 # pf_minutes = load_pf_file(pickle_path)
                 pf_minutes = Portfolio.load(pickle_path)
-                a = [col for col in pf_minutes.wrapper.columns if 'XAUUSD' in col]
-                pf_minutes = pf_minutes[a]
+                # a = [col for col in pf_minutes.wrapper.columns if 'XAUUSD' in col] # select only XAUUSD
+                # pf_minutes = pf_minutes[a]  # select only XAUUSD mask
 
                 # > Resample < #
                 pf_daily = pf_minutes.resample('1d')
@@ -164,7 +164,7 @@ class Filters_Genie:
                     break
 
                 #   Compute Profits
-                pf_monthly_returns = pf_monthly.get_returns(chunked=chunked_type)
+                pf_monthly_returns = pf_monthly.get_returns()
                 # pf_monthly_returns = pf_monthly_returns.vbt.sort_index().shift(1, freq ='MS')
 
                 mask = [col for col in pf_monthly_returns.keys()
@@ -188,7 +188,7 @@ class Filters_Genie:
 
                 # > Second Filters < #
                 pf_monthly_trades = pf_monthly.get_trades(chunked=chunked_type)
-                pf_total_profit = pf_monthly_trades.pnl.sum()
+                # pf_total_profit = pf_monthly_trades.pnl.sum()
 
                 #   Min Trades
                 pf_total_trades = pf_monthly_trades[mask].count()

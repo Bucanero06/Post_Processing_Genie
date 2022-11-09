@@ -63,7 +63,7 @@ class Overfitting_Genie:
 
         pf_minutes = load_pf_file(pickle_path)
         pf_resmapled = pf_minutes.resample(freq)
-        returns = pf_resmapled.get_returns(chunked=True)
+        returns = pf_resmapled.get_returns()
         #
         mask = returns.keys()
         #
